@@ -234,3 +234,109 @@ This endpoint registers a new captain. It validates the captain's data including
   }
 }
 ```
+
+# /captain/login Endpoint Documentation
+
+## Description
+This endpoint authenticates a registered captain by validating credentials and returning a JSON Web Token along with captain details upon successful authentication.
+
+## Request
+**Method:** POST  
+**Endpoint:** `/captain/login`
+
+### Request Body
+- `email`: Valid email address (required).
+- `password`: String (min 6 characters, required).
+
+**Example:**
+```json
+{
+  "email": "captain@example.com",
+  "password": "password123"
+}
+```
+
+## Response
+
+### Success
+- **Status Code:** 200 OK
+- **Response Body:**
+```json
+{
+  "token": "generated_jwt_token",
+  "captain": { /* captain details except for password */ }
+}
+```
+
+### Validation Error
+- **Status Code:** 400 Bad Request
+- **Response Body:**
+```json
+{
+  "errors": [
+    {
+      "msg": "Error message",
+      "param": "field_name",
+      "location": "body"
+    }
+  ]
+}
+```
+
+### Authentication Error
+- **Status Code:** 401 Unauthorized
+- **Response Body:**
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+# /captain/profile Endpoint Documentation
+
+## Description
+This endpoint retrieves the profile of the authenticated captain.
+
+## Request
+**Method:** GET  
+**Endpoint:** `/captain/profile`
+
+## Response
+
+### Success
+- **Status Code:** 200 OK
+- **Response Body:**
+```json
+{
+  "captain": { /* captain profile details */ }
+}
+```
+
+### Unauthorized Error
+- **Status Code:** 401 Unauthorized
+- **Response Body:**
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+# /captain/logout Endpoint Documentation
+
+## Description
+This endpoint logs out an authenticated captain by clearing the token cookie and blacklisting the provided token.
+
+## Request
+**Method:** GET  
+**Endpoint:** `/captain/logout`
+
+## Response
+
+### Success
+- **Status Code:** 200 OK
+- **Response Body:**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
