@@ -126,3 +126,23 @@ This endpoint authenticates an existing user. It validates the user's email and 
   "message": "Invalid email or password"
 }
 ```
+
+# /users/logout Endpoint Documentation
+
+## Description
+This endpoint logs out an authenticated user by clearing the token cookie and blacklisting the provided token.
+
+## Request
+**Method:** GET  
+**Endpoint:** `/users/logout`
+
+## Response
+
+### Success
+- **Status Code:** 200 OK
+- **Response Body:**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
