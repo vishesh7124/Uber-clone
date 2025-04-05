@@ -32,14 +32,15 @@ const userSchema = new mongoose.Schema({
 })
 
 // to generate a token for the user that will be sent to the client
-userSchema.methods.generateAuthToken = ()=>{
-    const token = jwt.sign({_id:this.id},process.env.JWT_SECRET);
+userSchema.methods.generateAuthToken = function(){
+    const token = jwt.sign({_id: this.id}, process.env.JWT_SECRET);
     return token;
 }
 
 // to check if the password is correct
-userSchema.methods.comparePassword = async (password)=>{
-    return bcrypt.compare(password,this.password);
+userSchema.methods.comparePassword = async function(password){
+    console.log(this.password)
+    return await bcrypt.compare(password, this.password);
 }
 
 // Hash the password before saving it to the database
