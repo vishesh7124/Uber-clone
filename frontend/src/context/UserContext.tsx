@@ -5,16 +5,17 @@ import { UserContextType, User } from "../types/user"
 export const UserDataContext = createContext<UserContextType | null>(null)
 
 const UserContext = ({children}:{children:ReactNode}) => {
-    const [user] = useState<User>({
+    const [user, setUser] = useState<User>({
         email:"",
         fullName:{
             firstName:'',
             lastName:''
-        }
+        },
+
     })
   return (
     <div>
-        <UserDataContext.Provider value={{user}} >
+        <UserDataContext.Provider value={{user, setUser}} >
             {children}
         </UserDataContext.Provider>
     

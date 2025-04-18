@@ -1,17 +1,36 @@
 import { Link } from "react-router";
 import { useForm } from "react-hook-form";
+import { useContext } from "react";
+import { CaptainContextType } from "../types/captain";
+import { CaptainDataContext } from "../context/CaptainContext";
+import { useNavigate } from "react-router";
+import axios from "axios";
+
+
+
 
 import logo from "../assets/driver.png";
 
+
+
 const CaptainLogin = () => {
+    const navigate = useNavigate()
+    const {setCaptain} = useContext(CaptainDataContext) as CaptainContextType
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (d: object) => {
-    console.log(d);
+  const onSubmit = async (payload: object) => {
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, payload);
+    if (response.status === 200) {
+        const data = response.data;
+        setCaptain(data.captain);
+        localStorage.setItem("token", data.token);
+        navigate("/captain-home");
+    } 
   };
 
   return (

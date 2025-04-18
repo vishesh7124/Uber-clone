@@ -1,24 +1,38 @@
 import { Link } from "react-router";
 import { useForm } from "react-hook-form";
+import { useContext } from "react";
+import { CaptainContextType } from "../types/captain";
+import { useNavigate } from "react-router";
+import { CaptainDataContext } from "../context/CaptainContext";
+import axios from "axios";
 
 import logo from "../assets/driver.png";
 
 const CaptainSignup = () => {
+  const navigate = useNavigate();
+  const { setCaptain } = useContext(CaptainDataContext) as CaptainContextType;
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (d: object) => {
-    console.log(d);
+  const onSubmit = async (payload: object) => {
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, payload);
+    if (response.status === 201) {
+      const data = response.data;
+      setCaptain(data.captain);
+      localStorage.setItem("token", data.token);
+      navigate("/captain-home");
+    }
   };
 
   return (
-    <div className=" pb-7 flex flex-col justify-between h-full   rounded-4xl  bg-white ">
+    <div className=" pb-7 flex flex-col justify-between h-full overflow-y-scroll   rounded-4xl  bg-white ">
       <div>
         <img className="m-6 w-18 object-contain" src={logo} alt="" />
-        <form className="px-7" onSubmit={handleSubmit(onSubmit)}>
+        <form className="px-7   " onSubmit={handleSubmit(onSubmit)}>
           <h3 className="text-base font-medium mb-2">
             What's your full name ?
           </h3>
@@ -45,6 +59,43 @@ const CaptainSignup = () => {
             placeholder="password"
             {...register("password", { required: true })}
           />
+          <h3 className="text-base font-medium mb-2 ">Vehicle Info</h3>
+          <div className="flex gap-4 ">
+            <input
+              className=" bg-[#eeeeee] mb-7 rounded px-4 py-2 w-1/2 text-lg placeholder:text-sm"
+              type="text"
+              required
+              placeholder="e.g., Red"
+              {...register("vehicle.color", { required: true })}
+            />
+            <input
+              className=" bg-[#eeeeee] mb-7 rounded px-4 py-2 w-1/2 text-lg placeholder:text-sm"
+              type="text"
+              required
+              placeholder="e.g., ABC-1234"
+              {...register("vehicle.plate", { required: true })}
+            />
+          </div>
+          <div className="flex gap-4 ">
+            <select
+              className="bg-[#eeeeee] mb-7 rounded px-4 py-2 w-1/2 text-lg"
+              required
+              {...register("vehicle.vehicleType", { required: true })}
+            >
+              <option value="">Select vehicle type</option>
+              <option value="car">Car</option>
+              <option value="auto">Auto</option>
+              <option value="motorcycle">Motorcycle</option>
+            </select>
+            <input
+              className="bg-[#eeeeee] mb-7 rounded px-4 py-2 w-1/2 text-lg placeholder:text-sm"
+              type="number"
+              required
+              placeholder="e.g., 4"
+              {...register("vehicle.capacity", { required: true })}
+            />
+          </div>
+
           {(errors.email || errors.password) && (
             <span className="text-red-500 text-sm">
               Please fill in all fields
@@ -64,7 +115,7 @@ const CaptainSignup = () => {
           </Link>
         </p>
       </div>
-      <div className="px-7 ">
+      <div className="px-7 py-2">
         <p className="text-[10px] leading-tight">
           This site is protected by reCAPTCHA and the{" "}
           <span className="underline">Google Privacy Policy</span> and{" "}

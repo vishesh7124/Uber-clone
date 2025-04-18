@@ -35,7 +35,11 @@ module.exports.registerUser = async(req,res,next)=>{
 
     res.status(201).json({
         token,
-        user
+       user:{
+        email:user.email,
+        fullname:user.fullname,
+
+       }
     })
 
 }

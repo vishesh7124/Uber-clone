@@ -26,8 +26,8 @@ module.exports.registerCaptain = async (req, res) => {
     const hashedPassword = await captainModel.hashPassword(password);
 
     const captain = await captainService.createCaptain({
-        firstname: fullname.firstname,
-        lastname: fullname.lastname,
+        firstname: fullname.split(" ")[0],
+        lastname: fullname.split(" ")[1],
         email,
         password: hashedPassword,
         color: vehicle.color,
@@ -40,7 +40,11 @@ module.exports.registerCaptain = async (req, res) => {
 
     res.status(201).json({
         token,
-        captain
+        captain:{
+            fullname: captain.fullname,
+            email: captain.email,
+            vehicle: captain.vehicle
+        }
     })
 
 }

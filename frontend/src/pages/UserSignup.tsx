@@ -1,17 +1,32 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import { UserContextType } from "../types/user";
+import { UserDataContext } from "../context/UserContext";
 
 import logo from "../assets/logo.png";
+import { useContext } from "react";
 
 const UserSignup = () => {
+    const navigate = useNavigate();
+    const {setUser} = useContext(UserDataContext) as UserContextType
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (d: object) => {
-    console.log(d);
+  const onSubmit = async (payload: object) => {
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/userS/register`, payload);
+    if(response.status ===201){
+        const data = response.data
+
+        setUser(data.user)
+
+        navigate('/home')
+    }
+
   };
 
   return (
