@@ -17,24 +17,24 @@ const CaptainProtectWrapper: React.FC<{children: React.ReactNode}> = ({children}
             console.log("no token")
             navigate('/captain-login')
         }
-    }, [navigate,token])
+        axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`,{
+            headers:{
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response: {status:number,data:{
+            captain:Captain
+        }})=>{
+            if(response.status === 200){
+                setCaptain(response.data.captain)
+                setIsLoading(false)
+            }
+        }).catch(err=>{
+            console.log(err)
+            localStorage.removeItem('token')
+            navigate('/captain-login')
+        })
+    }, [navigate,token,setCaptain])
 
-    axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`,{
-        headers:{
-            Authorization: `Bearer ${token}`
-        }
-    }).then((response: {status:number,data:{
-        captain:Captain
-    }})=>{
-        if(response.status === 200){
-            setCaptain(response.data.captain)
-            setIsLoading(false)
-        }
-    }).catch(err=>{
-        console.log(err)
-        localStorage.removeItem('token')
-        navigate('/captain-loginS')
-    })
 
      if(isLoading){
         return(
