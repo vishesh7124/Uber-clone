@@ -139,7 +139,7 @@ const Home = () => {
     <div className=" h-full relative overflow-hidden overflow-y-hidden  rounded-4xl flex flex-col justify-between w-full bg-white ">
       <img className="absolute m-6 w-18 object-contain" src={logo} alt="" />
       <div className="h-full w-full rounded-4xl">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjgBWkh-2RpEXtRmA1vxakcVsTzG3XVMnd3Q&s" className="object-cover h-full w-full rounded-4xl " alt="" />
+        <img src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" className="object-cover h-full w-full rounded-4xl " alt="" />
       </div>
       <div className="absolute top-0 h-full w-full flex flex-col justify-end   rounded-b-4xl">
         <div ref={tripRef} className=" h-[30%] p-5 bg-white rounded-4xl   relative" >
