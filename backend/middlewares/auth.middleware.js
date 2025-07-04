@@ -14,8 +14,6 @@ module.exports.authUser = async(req,res,next)=>{
         })
     }
 
-    console.log(token)
-
     const isBlackListed = await blacklistTokenModel.findOne({token})
 
     if(isBlackListed){
