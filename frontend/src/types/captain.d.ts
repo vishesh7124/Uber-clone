@@ -1,8 +1,8 @@
 export interface Captain {
     email: string;
-    fullName: {
-        firstName: string;
-        lastName: string;
+    fullname: {
+        firstname: string;
+        lastname: string;
         vehicle:{
             color: string,
             plate: string,

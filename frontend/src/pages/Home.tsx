@@ -11,6 +11,8 @@ import LookingForDriver from "../components/LookingForDriver";
 import WaitForDriver from "../components/WaitForDriver";
 import axios from "axios";
 
+import { Fare } from "../types/fair";
+
 interface FormData {
   pickup: string;
   drop: string;
@@ -42,6 +44,8 @@ const Home = () => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [activeField, setActiveField] = useState<'pickup' | 'drop' | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
+  const [fare, setFare] = useState<Fare|null>(null)
+  const [vehicleType, setVehicleType] = useState<"auto"|"car"|"motorcycle">("car") 
 
   const panelRef = useRef<null | HTMLDivElement>(null)
   const panelCloseRef = useRef<null | HTMLHeadingElement>(null)
@@ -207,10 +211,51 @@ const Home = () => {
     }
   };
 
-  const findRide = (payload: FormData) => {
+  const findRide = async (payload: FormData) => {
     console.log(payload)
     setVehiclePanel(true);
     setPanel(false)
+
+    // Call backend to get distance and time between pickup and drop
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/ride/get-fare`, {
+      params: {
+        pickup: payload.pickup,
+        destination: payload.drop
+      },
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+      });
+
+      setFare(response.data)
+      
+    } catch (error) {
+      console.error('Error fetching fare:', error);
+      setFare(null);
+    }
+  }
+
+  const createRide = async (vehicleType: "auto" | "car" | "motorcycle")=>{
+    const token = localStorage.getItem('token');
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/ride/create`,
+      {
+        pickup: pickupValue,
+        destination: dropValue,
+        vehicleType: vehicleType
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    )
+
+    console.log(response.data)
+
   }
 
   return (
@@ -266,16 +311,16 @@ const Home = () => {
         </div>
       </div>
       <div ref={vehiclePanelRef} className="absolute w-full z-10 bottom-0 rounded-4xl bg-white p-4 h-0  hidden " >
-            <VehiclePanel setConfirmedRidePanel={setConfirmedRidePanel} setVehiclePanel={setVehiclePanel} />
+            <VehiclePanel setVehicleType={setVehicleType} fare={fare} setConfirmedRidePanel={setConfirmedRidePanel} setVehiclePanel={setVehiclePanel} />
       </div>
       <div ref={confirmRidePanelRef} className=" absolute w-full z-10 bottom-0 rounded-4xl bg-white p-4  h-fit hidden  " >
         {confirmedRidePanel && 
-        <ConfirmedRide setVehicleFoundPanel={setVehicleFound} setConfirmedRidePanel={setConfirmedRidePanel} />
+        <ConfirmedRide pickup={pickupValue} destination={dropValue} fare={fare} vehicleType={vehicleType} createRide={createRide} setVehicleFoundPanel={setVehicleFound} setConfirmedRidePanel={setConfirmedRidePanel} />
         
         }
       </div>
       <div ref={vehicleFoundPanelRef}  className=" absolute w-full z-10 bottom-0 rounded-4xl bg-white p-4  h-fit hidden  " >
-        <LookingForDriver/>
+        <LookingForDriver pickup={pickupValue} destination={dropValue} fare={fare} vehicleType={vehicleType} />
       </div>
       <div ref={waitingForDriverPanelRef} className=" absolute w-full z-10 bottom-0 rounded-4xl bg-white p-4  h-fit hidden   " >
         <WaitForDriver setWaitForDriverPanel={setWaitingForDriverPanel} />

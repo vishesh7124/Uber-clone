@@ -9,6 +9,8 @@ async function getFare(pickup,destination){
         throw new Error('Pickup and destination are required');
     }
 
+    console.log(pickup)
+
     const distanceTime = await mapService.getDistanceTime(pickup,destination);
 
     //calculate fare for auto ,car and motorcycle
@@ -32,9 +34,9 @@ async function getFare(pickup,destination){
     }
 
     const fare ={
-        auto: baseFare.auto + distanceTime.distance.value/1000 * perKmRate.auto + distanceTime.duration.value/60 *perMinuteRate.auto,
-        car: baseFare.car + distanceTime.distance.value/1000 * perKmRate.car + distanceTime.duration.value/60*perMinuteRate.car,
-        motorcycle: baseFare.motorcycle + distanceTime.distance.value/1000 * perKmRate.motorcycle + distanceTime.duration.value/60*perMinuteRate.motorcycle,
+        auto: (baseFare.auto + distanceTime.distance.value/1000 * perKmRate.auto + distanceTime.duration.value/60 *perMinuteRate.auto).toFixed(2),
+        car: (baseFare.car + distanceTime.distance.value/1000 * perKmRate.car + distanceTime.duration.value/60*perMinuteRate.car).toFixed(2),
+        motorcycle: (baseFare.motorcycle + distanceTime.distance.value/1000 * perKmRate.motorcycle + distanceTime.duration.value/60*perMinuteRate.motorcycle).toFixed(2),
     };
 
     return fare;

@@ -319,3 +319,120 @@ MONGODB_URI=your_mongodb_connection_string
 - OTP is excluded from ride responses by default for security
 
 ---
+
+# /ride/get-fare Endpoint Documentation
+
+## Description
+This endpoint calculates fare estimates for all available vehicle types between two locations. It returns fare calculations for auto, car, and motorcycle without creating an actual ride booking.
+
+## Request
+**Method:** GET  
+**Endpoint:** `/ride/get-fare`
+
+### Query Parameters
+- `pickup` (string, required): Pickup location address (minimum 3 characters)
+- `destination` (string, required): Destination location address (minimum 3 characters)
+
+**Note:** This endpoint requires authentication via JWT token in the Authorization header.
+
+## Request Example
+```bash
+curl -X GET "http://localhost:3000/ride/get-fare?pickup=Times Square, New York, NY&destination=Brooklyn Bridge, NY" \
+  -H "Authorization: Bearer <your-jwt-token>"
+```
+
+## Response
+
+### Success Response
+- **Status Code:** 200 OK
+- **Response Body:**
+```json
+{
+  "auto": 67.50,
+  "car": 95.25,
+  "motorcycle": 52.75
+}
+```
+
+The response contains fare estimates for all three vehicle types:
+- `auto`: Fare estimate for auto rickshaw
+- `car`: Fare estimate for car
+- `motorcycle`: Fare estimate for motorcycle
+
+### Error Responses
+
+#### Validation Error
+- **Status Code:** 400 Bad Request
+- **Response Body:**
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid pickup",
+      "param": "pickup",
+      "location": "query"
+    }
+  ]
+}
+```
+
+#### Server Error
+- **Status Code:** 500 Internal Server Error
+- **Response Body:**
+```json
+{
+  "message": "Error message describing the issue"
+}
+```
+
+## Fare Calculation Details
+
+The fare calculation is based on distance and time between pickup and destination locations:
+
+### Fare Structure
+
+| Vehicle Type | Base Fare | Per KM Rate | Per Minute Rate |
+|-------------|-----------|-------------|-----------------|
+| Auto        | ₹30       | ₹10         | ₹2              |
+| Car         | ₹50       | ₹15         | ₹3              |
+| Motorcycle  | ₹20       | ₹8          | ₹1.5            |
+
+### Formula
+```
+Fare = Base Fare + (Distance in KM × Per KM Rate) + (Duration in Minutes × Per Minute Rate)
+```
+
+### Calculation Process
+1. The system uses Google Maps Distance Matrix API to get the distance and duration between pickup and destination
+2. Distance is converted from meters to kilometers
+3. Duration is converted from seconds to minutes
+4. The fare formula is applied for each vehicle type
+
+## Use Cases
+- **Fare Estimation**: Allow users to compare prices across different vehicle types before booking
+- **Price Transparency**: Show upfront pricing to users
+- **Route Planning**: Help users make informed decisions about their travel options
+
+## Authentication
+This endpoint requires a valid JWT token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+## Rate Limiting & Dependencies
+- This endpoint depends on Google Maps Distance Matrix API
+- Consider implementing caching for frequently requested routes to optimize API usage
+- Be mindful of Google Maps API rate limits and billing
+
+## Common Error Scenarios
+1. **Missing Authentication**: Returns 401 if no valid JWT token is provided
+2. **Invalid Locations**: Returns 500 if pickup or destination cannot be geocoded
+3. **Validation Errors**: Returns 400 if pickup/destination are too short or missing
+4. **API Service Errors**: Returns 500 if Google Maps API is unavailable or returns an error
+
+## Example Usage Flow
+1. User enters pickup and destination addresses
+2. Frontend calls `/ride/get-fare` to get price estimates
+3. User sees fare comparison for all vehicle types
+4. User selects preferred vehicle type
+5. Frontend calls `/ride/create` with the selected vehicle type

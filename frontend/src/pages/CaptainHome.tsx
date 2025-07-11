@@ -6,6 +6,7 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import ConfirmRidePopUp from '../components/ConfirmRidePopUp'
 import logo from "../assets/driver.png";
+import CaptainContext from '../context/CaptainContext'
 
 
 const CaptainHome = () => {
