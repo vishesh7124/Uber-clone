@@ -70,273 +70,252 @@ This endpoint registers a new user. It validates the user's data and returns a J
 }
 ```
 
-# /users/login Endpoint Documentation
 
-## Description
-This endpoint authenticates an existing user. It validates the user's email and password, then returns a JSON Web Token along with the user details upon successful authentication.
+## Maps Endpoints
 
-## Request
-**Method:** POST  
-**Endpoint:** `/users/login`
+### 1. Get Coordinates
+Get latitude and longitude coordinates for a given address.
 
-### Request Body
-- `email`: Valid email address (required).
-- `password`: String (min 6 characters, required).
+**Endpoint:** `GET /maps/get-coordinates`
 
-**Example:**
+**Query Parameters:**
+- `address` (string, required): Address to geocode (minimum 3 characters)
+
+**Request Example:**
+```bash
+curl -X GET "http://localhost:3000/maps/get-coordinates?address=New York, NY" \
+  -H "Authorization: Bearer <your-jwt-token>"
+```
+
+**Response:**
 ```json
 {
-  "email": "user@example.com",
-  "password": "password123"
+  "lat": 40.7127753,
+  "lng": -74.0059728
 }
 ```
 
-## Response
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing address parameter
+- `500 Internal Server Error`: Geocoding failed or server error
 
-### Success
-- **Status Code:** 200 OK
-- **Response Body:**
-```json
-{
-  "token": "generated_jwt_token",
-  "user": { /* user details except for password */ }
-}
+---
+
+### 2. Get Distance and Time
+Calculate distance and travel time between two locations.
+
+**Endpoint:** `GET /maps/get-distance-time`
+
+**Query Parameters:**
+- `origin` (string, required): Starting location (minimum 3 characters)
+- `destination` (string, required): Ending location (minimum 3 characters)
+
+**Request Example:**
+```bash
+curl -X GET "http://localhost:3000/maps/get-distance-time?origin=New York, NY&destination=Los Angeles, CA" \
+  -H "Authorization: Bearer <your-jwt-token>"
 ```
 
-### Validation Error
-- **Status Code:** 400 Bad Request
-- **Response Body:**
+**Response:**
 ```json
 {
-  "errors": [
-    {
-      "msg": "Error message",
-      "param": "field_name",
-      "location": "body"
-    }
-  ]
-}
-```
-
-### Authentication Error
-- **Status Code:** 401 Unauthorized
-- **Response Body:**
-```json
-{
-  "message": "Invalid email or password"
-}
-```
-
-# /users/logout Endpoint Documentation
-
-## Description
-This endpoint logs out an authenticated user by clearing the token cookie and blacklisting the provided token.
-
-## Request
-**Method:** GET  
-**Endpoint:** `/users/logout`
-
-## Response
-
-### Success
-- **Status Code:** 200 OK
-- **Response Body:**
-```json
-{
-  "message": "Logged out successfully"
-}
-```
-
-# /captain/register Endpoint Documentation
-
-## Description
-This endpoint registers a new captain. It validates the captain's data including personal details, credentials, and vehicle information, then returns a JSON Web Token along with the captain details upon successful registration.
-
-## Request
-**Method:** POST  
-**Endpoint:** `/captain/register`
-
-### Request Body
-- `email`: Valid email address (required).
-- `fullname`: Object containing:
-  - `firstname`: String (min 3 characters, required).
-  - `lastname`: String (optional; if provided, min 3 characters).
-- `password`: String (min 6 characters, required).
-- `vehicle`: Object containing:
-  - `color`: String (min 3 characters, required).
-  - `plate`: String (min 3 characters, required, unique).
-  - `capacity`: Number (required, minimum 1).
-  - `vehicleType`: Must be either "car", "motorcycle", or "auto" (required).
-
-**Example:**
-```json
-{
-  "email": "captain@example.com",
-  "fullname": {
-    "firstname": "Jane",
-    "lastname": "Doe"
+  "distance": {
+    "text": "4,501 km",
+    "value": 4501000
   },
-  "password": "password123",
-  "vehicle": {
-    "color": "Red",
-    "plate": "ABC123",
-    "capacity": 4,
+  "duration": {
+    "text": "1 day 17 hours",
+    "value": 147600
+  },
+  "origin": "New York, NY, USA",
+  "destination": "Los Angeles, CA, USA"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing origin/destination parameters
+- `500 Internal Server Error`: Distance calculation failed or server error
+
+---
+
+### 3. Get Autocomplete Suggestions
+Get place suggestions for autocomplete functionality.
+
+**Endpoint:** `GET /maps/get-suggestions`
+
+**Query Parameters:**
+- `input` (string, required): Search query (minimum 3 characters)
+
+**Request Example:**
+```bash
+curl -X GET "http://localhost:3000/maps/get-suggestions?input=New York" \
+  -H "Authorization: Bearer <your-jwt-token>"
+```
+
+**Response:**
+```json
+{
+  "suggestions": [
+    {
+      "place_id": "ChIJN1t_tDeuEmsRUsoyG83frY4",
+      "description": "New York, NY, USA",
+      "matched_substrings": [
+        {
+          "length": 8,
+          "offset": 0
+        }
+      ],
+      "structured_formatting": {
+        "main_text": "New York",
+        "main_text_matched_substrings": [
+          {
+            "length": 8,
+            "offset": 0
+          }
+        ],
+        "secondary_text": "NY, USA"
+      },
+      "types": ["locality", "political"]
+    }
+  ],
+  "status": "OK"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing input parameter
+- `500 Internal Server Error`: Autocomplete service failed or server error
+
+---
+
+## Ride Endpoints
+
+### 1. Create Ride
+Create a new ride booking with fare calculation.
+
+**Endpoint:** `POST /ride/create`
+
+**Request Body:**
+```json
+{
+  "pickup": "New York, NY",
+  "destination": "Brooklyn, NY",
+  "vehicleType": "car"
+}
+```
+
+**Request Parameters:**
+- `pickup` (string, required): Pickup location (minimum 3 characters)
+- `destination` (string, required): Destination location (minimum 3 characters)
+- `vehicleType` (string, required): Vehicle type - must be one of: `auto`, `motorcycle`, `car`
+
+**Request Example:**
+```bash
+curl -X POST "http://localhost:3000/ride/create" \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pickup": "Times Square, New York, NY",
+    "destination": "Brooklyn Bridge, NY",
     "vehicleType": "car"
-  }
-}
+  }'
 ```
 
-## Response
-
-### Success
-- **Status Code:** 201 Created
-- **Response Body:**
+**Response:**
 ```json
 {
-  "token": "generated_jwt_token",
-  "captain": { /* captain details except for password */ }
+  "_id": "64a1b2c3d4e5f6789012345",
+  "user": "64a1b2c3d4e5f6789012340",
+  "pickup": "Times Square, New York, NY",
+  "destination": "Brooklyn Bridge, NY",
+  "fare": 85.50,
+  "status": "pending",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-01-15T10:30:00.000Z"
 }
 ```
 
-### Validation Error
-- **Status Code:** 400 Bad Request
-- **Response Body:**
+**Fare Calculation:**
+The fare is calculated based on:
+
+| Vehicle Type | Base Fare | Per KM Rate | Per Minute Rate |
+|-------------|-----------|-------------|-----------------|
+| Auto        | ₹30       | ₹10         | ₹2              |
+| Car         | ₹50       | ₹15         | ₹3              |
+| Motorcycle  | ₹20       | ₹8          | ₹1.5            |
+
+**Formula:** `Fare = Base Fare + (Distance in KM × Per KM Rate) + (Duration in Minutes × Per Minute Rate)`
+
+**Error Responses:**
+- `400 Bad Request`: Invalid parameters or fare calculation failed
+- `500 Internal Server Error`: Ride creation failed or server error
+
+---
+
+## Error Handling
+
+All endpoints return consistent error responses:
+
 ```json
 {
   "errors": [
     {
-      "msg": "Error message",
-      "param": "field_name",
+      "msg": "Invalid pickup address",
+      "param": "pickup",
       "location": "body"
     }
   ]
 }
 ```
 
-### Example Response
+or
+
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "captain": {
-    "_id": "60a7c0d214d1f00abc123456",
-    "fullname": {
-      "firstname": "Jane",
-      "lastname": "Doe"
-    },
-    "email": "captain@example.com",
-    "vehicle": {
-      "color": "Red",
-      "plate": "ABC123",
-      "capacity": 4,
-      "vehicleType": "car"
-    },
-    "status": "inactive"
-  }
+  "message": "Internal Server Error"
 }
 ```
 
-# /captain/login Endpoint Documentation
+---
 
-## Description
-This endpoint authenticates a registered captain by validating credentials and returning a JSON Web Token along with captain details upon successful authentication.
+## Environment Variables
 
-## Request
-**Method:** POST  
-**Endpoint:** `/captain/login`
+Make sure to set up the following environment variables:
 
-### Request Body
-- `email`: Valid email address (required).
-- `password`: String (min 6 characters, required).
-
-**Example:**
-```json
-{
-  "email": "captain@example.com",
-  "password": "password123"
-}
+```env
+GOOGLE_MAPS_API=your_google_maps_api_key
+JWT_SECRET=your_jwt_secret
+MONGODB_URI=your_mongodb_connection_string
 ```
 
-## Response
+---
 
-### Success
-- **Status Code:** 200 OK
-- **Response Body:**
-```json
-{
-  "token": "generated_jwt_token",
-  "captain": { /* captain details except for password */ }
-}
-```
+## Google Maps API Setup
 
-### Validation Error
-- **Status Code:** 400 Bad Request
-- **Response Body:**
-```json
-{
-  "errors": [
-    {
-      "msg": "Error message",
-      "param": "field_name",
-      "location": "body"
-    }
-  ]
-}
-```
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the following APIs:
+   - Geocoding API
+   - Distance Matrix API
+   - Places API
+4. Create credentials (API Key)
+5. Add the API key to your environment variables
 
-### Authentication Error
-- **Status Code:** 401 Unauthorized
-- **Response Body:**
-```json
-{
-  "message": "Invalid email or password"
-}
-```
+---
 
-# /captain/profile Endpoint Documentation
+## Rate Limits
 
-## Description
-This endpoint retrieves the profile of the authenticated captain.
+- Google Maps APIs have usage limits and billing requirements
+- Implement caching for frequently requested routes to optimize API usage
+- Consider implementing request throttling for production use
 
-## Request
-**Method:** GET  
-**Endpoint:** `/captain/profile`
+---
 
-## Response
+## Security Notes
 
-### Success
-- **Status Code:** 200 OK
-- **Response Body:**
-```json
-{
-  "captain": { /* captain profile details */ }
-}
-```
+- All endpoints require authentication
+- API keys are stored as environment variables
+- Input validation is implemented on all endpoints
+- OTP is excluded from ride responses by default for security
 
-### Unauthorized Error
-- **Status Code:** 401 Unauthorized
-- **Response Body:**
-```json
-{
-  "message": "Unauthorized"
-}
-```
-
-# /captain/logout Endpoint Documentation
-
-## Description
-This endpoint logs out an authenticated captain by clearing the token cookie and blacklisting the provided token.
-
-## Request
-**Method:** GET  
-**Endpoint:** `/captain/logout`
-
-## Response
-
-### Success
-- **Status Code:** 200 OK
-- **Response Body:**
-```json
-{
-  "message": "Logged out successfully"
-}
-```
+---

@@ -9,29 +9,51 @@ import VehiclePanel from "../components/VehiclePanel";
 import ConfirmedRide from "../components/ConfirmedRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitForDriver from "../components/WaitForDriver";
+import axios from "axios";
+
+interface FormData {
+  pickup: string;
+  drop: string;
+}
+
+interface Suggestion {
+  place_id: string;
+  description: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
 
 const Home = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    setValue,
+    watch,
+  } = useForm<FormData>();
 
   const [panel, setPanel] = useState<boolean>(false)
   const [vehiclePanel, setVehiclePanel] = useState<boolean>(false)
   const [confirmedRidePanel, setConfirmedRidePanel] = useState<boolean>(false)
   const [vehicleFound, setVehicleFound] = useState<boolean>(false)
   const [waitingForDriverPanel, setWaitingForDriverPanel] = useState<boolean>(false)
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [activeField, setActiveField] = useState<'pickup' | 'drop' | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
 
   const panelRef = useRef<null | HTMLDivElement>(null)
   const panelCloseRef = useRef<null | HTMLHeadingElement>(null)
-  // const vehiclePanelCloseRef = useRef<null | HTMLHeadingElement>(null)
   const tripRef = useRef<null | HTMLDivElement>(null)
   const vehiclePanelRef = useRef<null | HTMLDivElement>(null)
   const confirmRidePanelRef = useRef<null | HTMLDivElement>(null)
   const vehicleFoundPanelRef = useRef<null | HTMLDivElement>(null)
   const waitingForDriverPanelRef = useRef<null | HTMLDivElement>(null)
 
+  // Watch form values to trigger suggestions
+  const pickupValue = watch("pickup");
+  const dropValue = watch("drop");
 
   useGSAP(()=>{
     if(panel){
@@ -96,6 +118,7 @@ const Home = () => {
       })
     }
   },[confirmedRidePanel])
+  
   useGSAP(function(){
     if(vehicleFound){
       gsap.to(vehicleFoundPanelRef.current,{
@@ -113,6 +136,7 @@ const Home = () => {
       })
     }
   },[vehicleFound])
+  
   useGSAP(function(){
     if(waitingForDriverPanel){
       gsap.to(waitingForDriverPanelRef.current,{
@@ -124,15 +148,69 @@ const Home = () => {
       
       
     }else{
-      gsap.to(vehicleFoundPanelRef.current,{
+      gsap.to(waitingForDriverPanelRef.current,{
         display:"none",
         transform:"translateY(100%)"
       })
     }
-  },[vehicleFound])
+  },[waitingForDriverPanel])
 
-  const submitHandler = (payload:object) => {
+  // Function to fetch suggestions from backend
+  const fetchSuggestions = async (input: string) => {
+    if (!input || input.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+        params: { input },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.status === 'OK') {
+        setSuggestions(response.data.suggestions);
+      } else {
+        setSuggestions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle input change and fetch suggestions
+  const handleInputChange = (field: 'pickup' | 'drop', value: string) => {
+    setValue(field, value);
+    setActiveField(field);
+    
+    // Debounce API calls
+    const timeoutId = setTimeout(() => {
+      fetchSuggestions(value);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = (suggestion: Suggestion) => {
+    if (activeField) {
+      setValue(activeField, suggestion.description);
+      setSuggestions([]);
+
+    }
+  };
+
+  const findRide = (payload: FormData) => {
     console.log(payload)
+    setVehiclePanel(true);
+    setPanel(false)
   }
 
   return (
@@ -141,27 +219,50 @@ const Home = () => {
       <div className="h-full w-full rounded-4xl">
         <img src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" className="object-cover h-full w-full rounded-4xl " alt="" />
       </div>
-      <div className="absolute top-0 h-full w-full flex flex-col justify-end   rounded-b-4xl">
-        <div ref={tripRef} className=" h-[30%] p-5 bg-white rounded-4xl   relative" >
+      <div className="absolute top-0 h-full w-full flex flex-col justify-end    rounded-b-4xl">
+        <div ref={tripRef} className=" h-fit p-5 bg-white rounded-4xl   relative" >
           <h5 ref={panelCloseRef} className="absolute top-6 right-6 text-xl opacity-0 hover:bg-gray-100 rounded-full cursor-pointer " onClick={()=> setPanel(false)} >
             <i className="ri-arrow-down-wide-fill"></i>
           </h5>
           <h4 className="text-2xl font-semibold" >Find a trip</h4>
-          <form onSubmit={handleSubmit(submitHandler)
-          } >
-            <div className="line absolute h-16 w-1 top-[45%] left-8 bg-gray-800 rounded-full">
+          <form onSubmit={handleSubmit(findRide)}>
+            <div className="line absolute h-16 w-1 top-[35%] left-8 bg-gray-800 rounded-full">
 
             </div>
-            <input onClick={()=>setPanel(true)} className="bg-[#eee] px-8 py-2 text-base rounded-lg w-full mt-5 " type="text" placeholder="Add a pick-up location" {...register("pickup",{required:true})} />
-            <input onClick={()=>setPanel(true)} className="bg-[#eee] px-8 py-2 text-base rounded-lg w-full mt-3 " type="text" placeholder="Enter your destination" {...register("drop",{required:true})} />
+            <input 
+              onClick={()=>setPanel(true)} 
+              className="bg-[#eee] px-8 py-2 text-base rounded-lg w-full mt-5 " 
+              type="text" 
+              placeholder="Add a pick-up location" 
+              {...register("pickup",{required:true})} 
+              onChange={(e) => handleInputChange('pickup', e.target.value)}
+              value={pickupValue || ''}
+            />
+            <input 
+              onClick={()=>setPanel(true)} 
+              className="bg-[#eee] px-8 py-2 text-base rounded-lg w-full mt-3 " 
+              type="text" 
+              placeholder="Enter your destination" 
+              {...register("drop",{required:true})} 
+              onChange={(e) => handleInputChange('drop', e.target.value)}
+              value={dropValue || ''}
+            />
             {(errors.pickup || errors.drop) && (
                 <span className="text-red-500 text-sm">Please fill in all fields</span>
             )}
+            <button type="submit" className="bg-black text-white px-6 py-2 rounded-lg mt-4 w-full font-semibold hover:bg-gray-900 transition">
+              Find a ride
+            </button>
           </form>
 
         </div>
         <div ref={panelRef} className="  bg-white rounded-b-4xl overflow-scroll   " >
-            <LocationSearchPanel setVehiclePanel={setVehiclePanel} />
+            <LocationSearchPanel 
+              setVehiclePanel={setVehiclePanel} 
+              suggestions={suggestions}
+              loading={loading}
+              onSuggestionSelect={handleSuggestionSelect}
+            />
         </div>
       </div>
       <div ref={vehiclePanelRef} className="absolute w-full z-10 bottom-0 rounded-4xl bg-white p-4 h-0  hidden " >
