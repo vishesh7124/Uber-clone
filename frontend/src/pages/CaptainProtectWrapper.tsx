@@ -21,11 +21,10 @@ const CaptainProtectWrapper: React.FC<{children: React.ReactNode}> = ({children}
             headers:{
                 Authorization: `Bearer ${token}`
             }
-        }).then((response: {status:number,data:{
-            captain:Captain
-        }})=>{
+        }).then((response: {status:number,data:Captain})=>{
             if(response.status === 200){
-                setCaptain(response.data.captain)
+                setCaptain(response.data)
+                console.log(response.data)
                 setIsLoading(false)
             }
         }).catch(err=>{

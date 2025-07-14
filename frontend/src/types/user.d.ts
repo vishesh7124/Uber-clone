@@ -4,7 +4,7 @@ export interface User {
         firstName: string;
         lastName: string;
     };
-
+    _id?: string; 
   }
   export type UserContextType = {
     user: User;

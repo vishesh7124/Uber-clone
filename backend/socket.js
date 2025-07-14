@@ -22,7 +22,6 @@ function initializeSocket(server) {
 
         socket.on('join', async(data)=>{
             const {userId, userType} = data;
-            
             if(userType === 'user'){
                 await userModel.findByIdAndUpdate(userId,{
                     socketId:socket.id
@@ -32,6 +31,25 @@ function initializeSocket(server) {
                     socketId:socket.id
                 })
             }
+        })
+
+        socket.on('update-location-captain', async(data)=>{
+            const {userId,location} = data;
+
+            if(!location || !location.ltd || !location.lng){
+                return socket.emit('error',{message: 'Invalid location data!'});
+            }
+
+
+            await captainModel.findByIdAndUpdate(userId,{
+                location:{
+                    ltd: location.ltd,
+                    lng: location.lng
+                }
+            })
+
+            console.log(await captainModel.findOne({_id: userId}));
+
         })
 
         socket.on('disconnect', () => {

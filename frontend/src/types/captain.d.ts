@@ -3,14 +3,15 @@ export interface Captain {
     fullname: {
         firstname: string;
         lastname: string;
-        vehicle:{
-            color: string,
-            plate: string,
-            capacity: number,
-            vehicleType: string
-        }
     };
+    vehicle:{
+          color: string,
+          plate: string,
+          capacity: number,
+          vehicleType: string
+    }
     status: 'active' | 'inactive';
+    _id?: string;
 
 
   }

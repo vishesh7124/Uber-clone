@@ -1,15 +1,18 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useContext, useEffect } from "react";
 import logo from "../assets/logo.png";
 import { useForm } from "react-hook-form";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import axios from "axios";
 import 'remixicon/fonts/remixicon.css'
 import LocationSearchPanel from "../components/LocationSearchPanel";
 import VehiclePanel from "../components/VehiclePanel";
 import ConfirmedRide from "../components/ConfirmedRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitForDriver from "../components/WaitForDriver";
-import axios from "axios";
+import { SocketContext } from "../context/SocketContext";
+import { UserDataContext } from "../context/UserContext";
+import { UserContextType } from "../types/user";
 
 import { Fare } from "../types/fair";
 
@@ -46,6 +49,17 @@ const Home = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [fare, setFare] = useState<Fare|null>(null)
   const [vehicleType, setVehicleType] = useState<"auto"|"car"|"motorcycle">("car") 
+
+  const {sendMessage, receiveMessage} = useContext(SocketContext);
+  const {user} = useContext(UserDataContext) as UserContextType
+  
+  useEffect(() => {
+    sendMessage("join",{userType:"user",userId:user._id})
+
+  
+
+  }, [user])
+  
 
   const panelRef = useRef<null | HTMLDivElement>(null)
   const panelCloseRef = useRef<null | HTMLHeadingElement>(null)

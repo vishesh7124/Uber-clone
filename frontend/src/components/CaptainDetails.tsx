@@ -6,7 +6,6 @@ import {  CaptainContextType } from "../types/captain"
 const CaptainDetails = () => {
 
     const {captain} = useContext(CaptainDataContext) as CaptainContextType
-    console.log(captain)
 
   return (
     <div>
