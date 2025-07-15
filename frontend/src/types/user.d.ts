@@ -1,10 +1,11 @@
 export interface User {
     email: string;
-    fullName: {
-        firstName: string;
-        lastName: string;
+    fullname: {
+        firstname: string;
+        lastname: string;
     };
     _id?: string; 
+    socketId?: string;
   }
   export type UserContextType = {
     user: User;

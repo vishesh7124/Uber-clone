@@ -11,6 +11,7 @@ export interface Captain {
           vehicleType: string
     }
     status: 'active' | 'inactive';
+    socketId?: string;
     _id?: string;
 
 

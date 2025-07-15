@@ -1,4 +1,5 @@
 import { useState, useRef, useContext, useEffect } from "react";
+import { useNavigate } from "react-router";
 import logo from "../assets/logo.png";
 import { useForm } from "react-hook-form";
 import { useGSAP } from "@gsap/react";
@@ -15,6 +16,7 @@ import { UserDataContext } from "../context/UserContext";
 import { UserContextType } from "../types/user";
 
 import { Fare } from "../types/fair";
+import { Ride } from "../types/ride";
 
 interface FormData {
   pickup: string;
@@ -49,10 +51,13 @@ const Home = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [fare, setFare] = useState<Fare|null>(null)
   const [vehicleType, setVehicleType] = useState<"auto"|"car"|"motorcycle">("car") 
+  const [ride, setRide] = useState<Ride>();
 
-  const {sendMessage, receiveMessage} = useContext(SocketContext);
+  const {socket,sendMessage, receiveMessage} = useContext(SocketContext);
   const {user} = useContext(UserDataContext) as UserContextType
   
+  const navigate = useNavigate();
+
   useEffect(() => {
     sendMessage("join",{userType:"user",userId:user._id})
 
@@ -60,6 +65,17 @@ const Home = () => {
 
   }, [user])
   
+  socket?.on('ride-confirmed', ride=>{
+    setRide(ride)
+    setVehicleFound(false)
+    setWaitingForDriverPanel(true);
+  })  
+
+  socket?.on('ride-started',ride=>{
+    setWaitingForDriverPanel(false);
+    navigate('/riding',{state: {ride: ride}})
+
+  })
 
   const panelRef = useRef<null | HTMLDivElement>(null)
   const panelCloseRef = useRef<null | HTMLHeadingElement>(null)
@@ -337,7 +353,7 @@ const Home = () => {
         <LookingForDriver pickup={pickupValue} destination={dropValue} fare={fare} vehicleType={vehicleType} />
       </div>
       <div ref={waitingForDriverPanelRef} className=" absolute w-full z-10 bottom-0 rounded-4xl bg-white p-4  h-fit hidden   " >
-        <WaitForDriver setWaitForDriverPanel={setWaitingForDriverPanel} />
+        <WaitForDriver ride={ride} setWaitForDriverPanel={setWaitingForDriverPanel} />
       </div>
 
     </div>

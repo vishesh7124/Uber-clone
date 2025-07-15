@@ -1,8 +1,20 @@
 import logo from "../assets/logo.png";
 import car2 from "../assets/car2.png";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { Ride } from "../types/ride";
+import { SocketContext } from "../context/SocketContext";
+import { useContext } from "react";
 
 const Riding = () => {
+  const location = useLocation();
+  const ride:Ride = location.state?.ride;
+  const {socket} = useContext(SocketContext);
+  const navigate = useNavigate();
+
+  socket?.on('ride-ended',()=>{
+    navigate('/home');
+  })
+
   return (
     <div className=" h-full relative overflow-hidden overflow-y-hidden  rounded-4xl flex flex-col justify-between w-full bg-white ">
       <img className="absolute m-6 w-18 object-contain" src={logo} alt="" />
@@ -23,23 +35,23 @@ const Riding = () => {
         <div className="flex items-center justify-between w-full ">
           <img className="h-20 w-20 object-contain" src={car2} alt="" />
           <div className="text-right">
-            <h2 className="text-md font-medium">Sarthak</h2>
-            <h4 className="text-lg font-semibold -mt-1 -mb-1">MP04 AB 1234</h4>
-            <p className="text-sm text-gray-600">Maruit Suzuki Alto</p>
+            <h2 className="text-md font-medium">{ride.captain?.fullname.firstname}</h2>
+            <h4 className="text-lg font-semibold -mt-1 -mb-1">{ride.captain?.vehicle.plate}</h4>
+            <p className="text-sm text-gray-600">{ride.captain?.vehicle.color}</p>
           </div>
         </div>
         <div className="w-full flex flex-col justify-center items-start gap-4 ">
           <div className="flex justify-start items-center gap-4 border-b-[0.25px] border-gray-300 w-full ">
             <i className=" text-2xl ri-map-pin-2-fill"></i>
             <div className="flex flex-col items-start justify-center ">
-              <h3 className="font-semibold text-sm">562/11-A</h3>
-              <p className="text-sm -mt-1 text-gray-600">New Delhi</p>
+              <h3 className="font-semibold text-sm">{ride?.destination.split(" ")[0]}</h3>
+              <p className="text-sm -mt-1 text-gray-600">{ride?.destination.split(" ").slice(1)}</p>
             </div>
           </div>
           <div className="flex justify-start items-center gap-4 border-b-[0.25px] border-gray-300 w-full ">
             <i className=" text-2xl ri-cash-line"></i>{" "}
             <div className="flex flex-col items-start justify-center ">
-              <h3 className="font-semibold text-sm">₹634.9</h3>
+              <h3 className="font-semibold text-sm">₹{ride.fare}</h3>
               <p className="text-sm -mt-1 text-gray-600">Cash</p>
             </div>
           </div>

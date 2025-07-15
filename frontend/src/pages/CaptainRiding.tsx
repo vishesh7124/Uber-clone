@@ -1,13 +1,18 @@
 import  { useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import FinishRide from '../components/FinishRide'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
+import axios from 'axios'
+import { Ride } from '../types/ride'
 
 const CaptainRiding = () => {
 
     const [finishRidePanel, setFinishRidePanel] = useState(false)
     const finishRidePanelRef = useRef(null)
+    const location = useLocation();
+    const rideData:Ride = location.state?.ride;
+    const navigate = useNavigate();
 
     useGSAP(function () {
         if (finishRidePanel) {
@@ -19,7 +24,23 @@ const CaptainRiding = () => {
                 transform: 'translateY(100%)'
             })
         }
-    }, [finishRidePanel])
+    }, [finishRidePanel]);
+
+    const endRide = async ()=>{
+        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/ride/end-ride`,{},{
+            headers:{
+                Authorization:`Bearer ${localStorage.getItem('token')}`
+            },
+            params:{
+                rideId:rideData._id
+            }
+        })
+
+        if(response.status===200){
+            setFinishRidePanel(false);
+            navigate('/captain-home');
+        }
+    }
 
 
     return (
@@ -47,7 +68,7 @@ const CaptainRiding = () => {
                 <button className=' bg-green-600 text-white font-semibold p-3 px-10 rounded-lg'>Complete Ride</button>
             </div>
             <div ref={finishRidePanelRef} className='absolute w-full z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12'>
-                <FinishRide setFinishRidePanel={setFinishRidePanel} />
+                <FinishRide ride={rideData} endRide={endRide} setFinishRidePanel={setFinishRidePanel} />
             </div>
 
         </div>
