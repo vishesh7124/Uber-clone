@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import axios from "axios";
 import ConfirmRidePopUp from "../components/ConfirmRidePopUp";
+import LiveTracking from "../components/LiveTracking";
 import logo from "../assets/driver.png";
 import { CaptainDataContext } from "../context/CaptainContext";
 import { SocketContext } from "../context/SocketContext";
@@ -119,11 +120,12 @@ const CaptainHome = () => {
         </Link>
       </div>
       <div className="h-3/5">
-        <img
+        {/* <img
           className="h-full w-full object-cover"
           src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif"
           alt=""
-        />
+        /> */}
+        <LiveTracking />
       </div>
       <div className="h-2/5 p-6">
         <CaptainDetails />

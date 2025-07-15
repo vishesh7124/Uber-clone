@@ -5,6 +5,8 @@ import { Ride } from "../types/ride";
 import { SocketContext } from "../context/SocketContext";
 import { useContext } from "react";
 
+import LiveTracking from "../components/LiveTracking";
+
 const Riding = () => {
   const location = useLocation();
   const ride:Ride = location.state?.ride;
@@ -25,11 +27,12 @@ const Riding = () => {
         <i className="  text-2xl  ri-home-2-fill"></i>
       </Link>
       <div className="h-1/2 w-full rounded-4xl">
-        <img
+        {/* <img
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjgBWkh-2RpEXtRmA1vxakcVsTzG3XVMnd3Q&s"
           className="object-cover h-full w-full rounded-4xl "
           alt=""
-        />
+        /> */}
+        <LiveTracking/>
       </div>
       <div className="h-1/2 flex flex-col px-4 justify-center items-center gap-6">
         <div className="flex items-center justify-between w-full ">

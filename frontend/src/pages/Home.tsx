@@ -11,6 +11,8 @@ import VehiclePanel from "../components/VehiclePanel";
 import ConfirmedRide from "../components/ConfirmedRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitForDriver from "../components/WaitForDriver";
+import LiveTracking from "../components/LiveTracking";
+
 import { SocketContext } from "../context/SocketContext";
 import { UserDataContext } from "../context/UserContext";
 import { UserContextType } from "../types/user";
@@ -292,7 +294,8 @@ const Home = () => {
     <div className=" h-full relative overflow-hidden overflow-y-hidden  rounded-4xl flex flex-col justify-between w-full bg-white ">
       <img className="absolute m-6 w-18 object-contain" src={logo} alt="" />
       <div className="h-full w-full rounded-4xl">
-        <img src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" className="object-cover h-full w-full rounded-4xl " alt="" />
+        {/* <img src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" className="object-cover h-full w-full rounded-4xl " alt="" /> */}
+        <LiveTracking/>
       </div>
       <div className="absolute top-0 h-full w-full flex flex-col justify-end    rounded-b-4xl">
         <div ref={tripRef} className=" h-fit p-5 bg-white rounded-4xl   relative" >
